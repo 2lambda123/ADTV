@@ -881,7 +881,7 @@ void RenderFrameGraphics(void)
 	{
 		ENTITY* Current = gEntities;
 
-		while (Current->Next != NULL)
+		while (Current != NULL)
 		{
 			RECT EntityRect = { 0 };
 
@@ -1341,7 +1341,7 @@ DWORD WINAPI DiscoveryThreadProc(_In_ LPVOID lpParameter)
 
 	Current = gEntities;
 
-	while (Current->Next != NULL)
+	while (Current != NULL)
 	{
 		if (Current->Type == ET_SITE)
 		{
@@ -1414,7 +1414,7 @@ DWORD WINAPI DiscoveryThreadProc(_In_ LPVOID lpParameter)
 
 	Current = gEntities;	
 
-	while (Current->Next != NULL)
+	while (Current != NULL)
 	{
 		if (Current->Type == ET_SITE)
 		{			
@@ -1427,7 +1427,7 @@ DWORD WINAPI DiscoveryThreadProc(_In_ LPVOID lpParameter)
 
 			int DCindex = 0;
 
-			while (DC->Next != NULL)
+			while (DC != NULL)
 			{
 				SelectObject(gGraphicsData.BackBufferDeviceContext, gGraphicsData.HugeFont);
 
@@ -1486,10 +1486,8 @@ DWORD WINAPI DiscoveryThreadProc(_In_ LPVOID lpParameter)
 
 	Current = gEntities;
 
-	while (Current->Next != NULL)
+	while (Current != NULL)
 	{
-
-
 		Current = Current->Next;
 	}
 
