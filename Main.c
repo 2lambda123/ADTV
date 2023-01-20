@@ -3,7 +3,6 @@
 //
 // TODO
 // -----
-// - Fix the mouse panning. When you click and drag with the mouse, the camera should pan around the world. This works, but not that well. It's suboptimal.
 // - Fix the mouse zooming. When you scroll the mouse wheel, the camera should zoom in and out. This works, but not that well. It's suboptimal.
 // - Site links.. need a smart algorithm to draw lines between sites that represent replication connections, but these lines have to snake around other sites without overlapping.
 // - Add more resolutions, but as we increase resolution CPU usage gets much higher and everything gets slower. We already are only drawing entities if they appear on screen,
@@ -263,11 +262,7 @@ LRESULT CALLBACK MainWindowProc(_In_ HWND WindowHandle, _In_ UINT Message, _In_ 
 
 					gCamera.y -= dy;
 
-					gMousePreviousCursorPosition = gMouseScreenPosition;
-
-					//gCamera.x = gMouseWorldPosition.x / gCamera.z;
-
-					//gCamera.y = gMouseWorldPosition.y / gCamera.z;
+					gMousePreviousCursorPosition = gMouseScreenPosition;					
 				}
 			}
 
@@ -414,26 +409,19 @@ LRESULT CALLBACK MainWindowProc(_In_ HWND WindowHandle, _In_ UINT Message, _In_ 
 		{
 			if (WaitForSingleObject(gDiscoveryThread, 0) == DISCOVERY_THREAD_FINISHED)
 			{
-				if (gCamera.z > MIN_CAMERA_ALTITUDE)
-				{
-					gCamera.x = gMouseWorldPosition.x - gMouseScreenPosition.x;
-
-					gCamera.y = gMouseWorldPosition.y - gMouseScreenPosition.y;
-				}
-
 				if ((short)HIWORD(WParam) > 0)
 				{
 					if ((short)LOWORD(WParam) & MK_CONTROL)
 					{
 						if (gCamera.z > MIN_CAMERA_ALTITUDE + 10)
 						{
-							gCamera.z -= 10;
+							gCamera.z -= 10;							
 						}
 						else
 						{
 							if (gCamera.z > MIN_CAMERA_ALTITUDE)
 							{
-								gCamera.z--;
+								gCamera.z--;								
 							}
 						}
 					}
@@ -441,7 +429,7 @@ LRESULT CALLBACK MainWindowProc(_In_ HWND WindowHandle, _In_ UINT Message, _In_ 
 					{
 						if (gCamera.z > MIN_CAMERA_ALTITUDE)
 						{
-							gCamera.z--;
+							gCamera.z--;							
 						}
 					}
 				}
@@ -451,13 +439,13 @@ LRESULT CALLBACK MainWindowProc(_In_ HWND WindowHandle, _In_ UINT Message, _In_ 
 					{
 						if (gCamera.z < MAX_CAMERA_ALTITUDE - 10)
 						{
-							gCamera.z += 10;
+							gCamera.z += 10;							
 						}
 						else
 						{
 							if (gCamera.z < MAX_CAMERA_ALTITUDE)
 							{
-								gCamera.z++;
+								gCamera.z++;								
 							}
 						}
 					}
@@ -465,10 +453,17 @@ LRESULT CALLBACK MainWindowProc(_In_ HWND WindowHandle, _In_ UINT Message, _In_ 
 					{
 						if (gCamera.z < MAX_CAMERA_ALTITUDE)
 						{
-							gCamera.z++;
+							gCamera.z++;							
 						}
 					}
-				}
+				}				
+				
+				POINT WindowCenter = { gGraphicsData.ClientRect.right / 2, gGraphicsData.ClientRect.bottom / 2 };
+
+				gCamera.x = gMouseScreenPosition.x - WindowCenter.x;
+
+				gCamera.y = gMouseScreenPosition.y - WindowCenter.y;
+				
 			}
 
 			break;
@@ -1025,69 +1020,6 @@ void RenderFrameGraphics(void)
 		}
 	}
 
-	//if (WaitForSingleObject(gDiscoveryThread, 0) == WAIT_OBJECT_0)
-	//{
-		//for (int i = 0; i < _countof(gEntities); i++)
-		//{
-		//	if (gEntities[i].Type == ET_NONE)
-		//	{
-		//		break;
-		//	}
-
-		//	RECT EntityRect = { 0 };
-
-		//	SIZE TextSize = { 0 };
-
-		//	SetRect(
-		//		&EntityRect,
-		//		(gEntities[i].x * (1.0f / gCamera.z)) - gCamera.x,
-		//		(gEntities[i].y * (1.0f / gCamera.z)) - gCamera.y,
-		//		(gEntities[i].x * (1.0f / gCamera.z)) + gEntities[i].width * (1.0f / gCamera.z) - gCamera.x,
-		//		(gEntities[i].y * (1.0f / gCamera.z)) + gEntities[i].height * (1.0f / gCamera.z) - gCamera.y);
-
-		//	if (EntityRect.left > gGraphicsData.ClientRect.right ||
-		//		EntityRect.top > gGraphicsData.ClientRect.bottom ||
-		//		EntityRect.bottom < gGraphicsData.ClientRect.top ||
-		//		EntityRect.right < 0)
-		//	{
-		//		continue;
-		//	}			
-
-		//	if (gEntities[i].Type == ET_SITE)
-		//	{
-		//		// Rectangles... you would think you only need 4 verticies to draw a rectangle
-		//		// but the first vertex needs to be the starting point apparently
-		//		POINT Verticies[] = { 
-		//			{ EntityRect.left,  EntityRect.top },
-		//			{ EntityRect.right, EntityRect.top },
-		//			{ EntityRect.right, EntityRect.bottom },
-		//			{ EntityRect.left,  EntityRect.bottom },
-		//			{ EntityRect.left,  EntityRect.top }
-		//		};
-
-		//		// FrameRect is always 1 pixel thick, but Polyline uses the currently selected PEN and can be any thickness we want.
-
-		//		Polyline(gGraphicsData.BackBufferDeviceContext, Verticies, _countof(Verticies));
-
-
-		//	}
-		//	else if (gEntities[i].Type == ET_DC)
-		//	{
-		//		// Triangles
-		//		POINT Verticies[] = { 
-		//			{ EntityRect.left, EntityRect.bottom }, 
-		//			{ EntityRect.right, EntityRect.bottom },
-		//			{ EntityRect.right - ((EntityRect.right - EntityRect.left) / 2), EntityRect.top}};
-
-		//		Polygon(gGraphicsData.BackBufferDeviceContext, Verticies, _countof(Verticies));
-
-
-		//	}
-
-		//	;
-		//}
-	//}
-
 	if (WaitForSingleObject(gDiscoveryThread, 0) != DISCOVERY_THREAD_FINISHED)
 	{
 		SelectObject(gGraphicsData.BackBufferDeviceContext, gGraphicsData.BigFont);
@@ -1561,606 +1493,6 @@ DWORD WINAPI DiscoveryThreadProc(_In_ LPVOID lpParameter)
 		Current = Current->Next;
 	}
 
-	//for (int site = 0; site < _countof(gEntities); site++)
-	//{
-	//	int NumDCsInSite = 0;
-
-	//	if (gEntities[site].Type == ET_NONE)
-	//	{
-	//		break;
-	//	}
-
-	//	if (gEntities[site].Type == ET_SITE)
-	//	{
-	//		for (int dc = 0; dc < _countof(gEntities); dc++)
-	//		{
-	//			if (gEntities[dc].Type = ET_NONE)
-	//			{
-	//				break;
-	//			}
-
-	//			if ((gEntities[dc].Type == ET_DC) && (_wcsicmp(gEntities[dc].site, gEntities[site].name)) == 0)
-	//			{
-	//				NumDCsInSite++;
-	//			}
-	//		}
-
-	//		LogEventW(LL_INFO, LF_FILE, L"[%s] %d DCs found in site %s.", __FUNCTIONW__, NumDCsInSite, gEntities[site].name);
-	//	}
-	//}
-
-	//for (int site = 0; site < _countof(gEntities); site++)
-	//{
-	//	int DCsInSite = 0;
-
-	//	SIZE TextSize;
-
-	//	if (gEntities[site].Type == ET_NONE)
-	//	{
-	//		break;
-	//	}
-
-	//	if (gEntities[site].Type == ET_SITE)
-	//	{
-	//		//for (int child = 0; child < _countof(gEntities); child++)
-	//		//{
-	//		//	if (gEntities[child].Type == ET_NONE)
-	//		//	{
-	//		//		break;		
-	//		//	}
-	//		//	
-	//		//	//if ((gEntities[child].Type == ET_DC) && (_wcsicmp(gEntities[child].site, gEntities[site].name) == 0))
-	//		//	//{
-	//		//	//	DCsInSite++;
-
-	//		//	//	// measure the fqdn size of the DC so we know how wide the site needs to be drawn
-
-
-	//		//	//}				
-	//		//}
-
-	//		gEntities[site].x = PreviousSite.x + PreviousSiteWidth + 256;
-
-	//		gEntities[site].y = PreviousSite.y;
-
-	//		// add extra width for the triangle DC icons, and some padding
-
-	//		gEntities[site].width += DEF_DC_SIZE + (DEF_DC_SIZE / 2);
-
-	//		if (DCsInSite == 0)
-	//		{
-	//			gEntities[site].height = DEF_DC_SIZE;
-	//		}
-	//		else
-	//		{
-	//			gEntities[site].height = (DCsInSite * DEF_DC_SIZE) + (DCsInSite * (DEF_DC_SIZE / 2));
-	//		}
-
-
-
-	//	}		
-
-	//	for (int child = 0; child < _countof(gEntities); child++)
-	//	{
-	//		if (gEntities[child].Type == ET_NONE)
-	//		{
-	//			break;
-	//		}
-
-	//		if ((gEntities[child].Type == ET_DC) && (_wcsicmp(gEntities[child].site, gEntities[site].name) == 0))
-	//		{
-	//			gEntities[child].x = gEntities[site].x + (DEF_DC_SIZE / 4);
-
-	//			gEntities[child].y = (gEntities[site].y + (DEF_DC_SIZE / 4)) + (child * (DEF_DC_SIZE + (DEF_DC_SIZE / 2)));
-
-	//			gEntities[child].width = DEF_DC_SIZE;
-
-	//			gEntities[child].height = DEF_DC_SIZE;
-
-
-	//		}
-	//	}
-	//}
-
-
-
-
-	
-	// First, connect to a DC and query rootDSE to get the configuration naming context and the dns hostname of the DC we're connected to.
-
-	//if ((LdapConnection = ldap_initW(gRegParams.DomainController, LDAP_PORT)) == NULL)
-	//{
-	//	Result = LdapGetLastError();
-
-	//	LogEventW(LL_ERROR, LF_FILE, L"[%s] ldap_initW failed with 0x%08lx!", __FUNCTIONW__, Result);
-
-	//	goto Exit;
-	//}
-
-	//Result = ldap_connect(LdapConnection, NULL);
-
-	//if (Result != LDAP_SUCCESS)
-	//{
-	//	LogEventW(LL_ERROR, LF_FILE, L"[%s] ldap_connect to %S failed with 0x%08lx!", __FUNCTIONW__, LdapConnection->ld_host, Result);
-
-	//	goto Exit;
-	//}
-
-	//LogEventW(LL_INFO, LF_FILE, L"[%s] Connected to %S.", __FUNCTIONW__, LdapConnection->ld_host);
-
-	//Result = ldap_bind_sW(LdapConnection, NULL, NULL, LDAP_AUTH_NEGOTIATE);
-
-	//if (Result != LDAP_SUCCESS)
-	//{
-	//	LogEventW(LL_ERROR, LF_FILE, L"[%s] ldap_bind_sW to %S failed with 0x%08lx!", __FUNCTIONW__, LdapConnection->ld_host, Result);
-
-	//	goto Exit;
-	//}
-
-	//LogEventW(LL_INFO, LF_FILE, L"[%s] Authenticated as current user.", __FUNCTIONW__);
-
-	//Result = ldap_search_sW(LdapConnection, L"", LDAP_SCOPE_BASE, L"(objectClass=*)", (wchar_t*[]) { L"configurationNamingContext", L"dnsHostname", NULL }, 0, &LdapMessage);
-
-	//if (Result != LDAP_SUCCESS)
-	//{
-	//	LogEventW(LL_ERROR, LF_FILE, L"[%s] ldap_search_sW for rootDSE failed with 0x%08lx!", __FUNCTIONW__, Result);
-
-	//	goto Exit;
-	//}
-
-	//if (ldap_count_entries(LdapConnection, LdapMessage))
-	//{
-	//	LDAPMessage* Entry = NULL;
-
-	//	wchar_t* Attr = NULL;
-
-	//	wchar_t** Values = NULL;
-
-	//	BerElement* pBerElement = NULL;
-
-	//	for (Entry = ldap_first_entry(LdapConnection, LdapMessage); Entry != NULL; Entry = ldap_next_entry(LdapConnection, Entry))
-	//	{
-	//		for (Attr = ldap_first_attributeW(LdapConnection, Entry, &pBerElement); Attr != NULL; Attr = ldap_next_attributeW(LdapConnection, Entry, pBerElement))
-	//		{
-	//			if (_wcsicmp(Attr, L"configurationNamingContext") == 0)
-	//			{
-	//				Values = ldap_get_valuesW(LdapConnection, Entry, Attr);
-
-	//				if (Values)
-	//				{
-	//					wcscpy_s(ConfigurationNamingContext, _countof(ConfigurationNamingContext), *Values);
-	//				}
-	//			}
-	//			else if (_wcsicmp(Attr, L"dnsHostname") == 0)
-	//			{
-	//				Values = ldap_get_valuesW(LdapConnection, Entry, Attr);
-
-	//				if (Values)
-	//				{
-	//					wcscpy_s(DCHostname, _countof(DCHostname), *Values);
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
-
-	//if (wcslen(ConfigurationNamingContext) == 0)
-	//{
-	//	Result = ERROR_DS_CANT_RETRIEVE_ATTS;
-
-	//	LogEventW(LL_ERROR, LF_FILE, L"[%s] Unable to locate configurationNamingContext!", __FUNCTIONW__);
-
-	//	goto Exit;
-	//}
-
-	//if (wcslen(DCHostname) == 0)
-	//{
-	//	Result = ERROR_DS_CANT_RETRIEVE_ATTS;
-
-	//	LogEventW(LL_ERROR, LF_FILE, L"[%s] Unable to locate dnsHostname!", __FUNCTIONW__);
-
-	//	goto Exit;
-	//}
-
-	//LogEventW(LL_INFO, LF_FILE, L"[%s] Found configurationNamingContext: %s on server %s.", __FUNCTIONW__, ConfigurationNamingContext, DCHostname);
-
-	//wcscpy_s(SitesContainerDN, _countof(SitesContainerDN), L"CN=Sites,");
-
-	//wcscat_s(SitesContainerDN, _countof(SitesContainerDN), ConfigurationNamingContext);
-
-	//LogEventW(LL_INFO, LF_FILE, L"[%s] Sites container:%s", __FUNCTIONW__, SitesContainerDN);
-
-	//// next query the config NC for all sites and make them into entities so that we can draw them.
-	//// Free and reuse the same ldapmessage from the previous query
-	//if (LdapMessage)
-	//{
-	//	ldap_msgfree(LdapMessage);
-
-	//	LdapMessage = NULL;			
-	//}
-
-	//Result = ldap_search_sW(LdapConnection, ConfigurationNamingContext, LDAP_SCOPE_SUBTREE, L"(objectClass=site)", (wchar_t* []) { L"cn", NULL }, 0, &LdapMessage);
-
-	//if (Result != LDAP_SUCCESS)
-	//{
-	//	LogEventW(LL_ERROR, LF_FILE, L"[%s] ldap_search_sW for sites failed with 0x%08lx!", __FUNCTIONW__, Result);
-
-	//	goto Exit;
-	//}
-
-	//if (ldap_count_entries(LdapConnection, LdapMessage))
-	//{
-	//	LDAPMessage* Entry = NULL;
-
-	//	wchar_t* Attr = NULL;
-
-	//	wchar_t** Values = NULL;
-
-	//	BerElement* pBerElement = NULL;
-
-	//	for (Entry = ldap_first_entry(LdapConnection, LdapMessage); Entry != NULL; Entry = ldap_next_entry(LdapConnection, Entry))
-	//	{
-	//		for (Attr = ldap_first_attributeW(LdapConnection, Entry, &pBerElement); Attr != NULL; Attr = ldap_next_attributeW(LdapConnection, Entry, pBerElement))
-	//		{
-	//			if (_wcsicmp(Attr, L"cn") == 0)
-	//			{
-	//				Values = ldap_get_valuesW(LdapConnection, Entry, Attr);
-
-	//				if (Values)
-	//				{
-	//					// find an empty entity to assign this site to
-
-	//					BOOL Assigned = FALSE;
-
-	//					for (int e = 0; e < _countof(gEntities); e++)
-	//					{
-	//						if (gEntities[e].Type == ET_NONE)
-	//						{
-	//							Assigned = TRUE;
-
-	//							gEntities[e].Type = ET_SITE;
-
-	//							wcscpy_s(gEntities[e].name, _countof(gEntities[e].name), *Values);
-
-	//							NumSites++;
-
-	//							break;
-	//						}
-	//					}
-	//					
-	//					if (Assigned == FALSE)
-	//					{
-	//						Result = ERROR_OUT_OF_STRUCTURES;
-
-	//						LogEventW(LL_ERROR, LF_FILE, L"[%s] Unable to find an empty storage location for the new entity! Too many objects?", __FUNCTIONW__);
-
-	//						goto Exit;
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
-	//
-	//LogEventW(LL_INFO, LF_FILE, L"[%s] Found %d sites.", __FUNCTIONW__, NumSites);
-
-	//// now for each site, we have to get all the domain controllers that reside in those sites
-
-	//for (int site = 0; site < _countof(gEntities); site++)
-	//{
-	//	if (gEntities[site].Type == ET_SITE)
-	//	{
-	//		NumDCs = 0;
-
-	//		wchar_t SiteDN[196] = { 0 };
-
-	//		_snwprintf_s(SiteDN, _countof(SiteDN), _TRUNCATE, L"CN=%s,%s", gEntities[site].name, SitesContainerDN);			
-
-	//		// Free and reuse the same ldapmessage from the previous query
-	//		if (LdapMessage)
-	//		{
-	//			ldap_msgfree(LdapMessage);
-
-	//			LdapMessage = NULL;
-	//		}
-
-	//		Result = ldap_search_sW(LdapConnection, SiteDN, LDAP_SCOPE_SUBTREE, L"(objectClass=server)", (wchar_t* []) { L"dnshostname", L"distinguishedname", NULL }, 0, &LdapMessage);
-
-	//		if (Result != LDAP_SUCCESS)
-	//		{
-	//			LogEventW(LL_ERROR, LF_FILE, L"[%s] ldap_search_sW for domain controllers in the %s site failed with 0x%08lx!", __FUNCTIONW__, gEntities[site].name, Result);
-
-	//			goto Exit;
-	//		}
-
-	//		if (ldap_count_entries(LdapConnection, LdapMessage))
-	//		{
-	//			LDAPMessage* Entry = NULL;
-
-	//			wchar_t* Attr = NULL;
-
-	//			wchar_t** Values = NULL;
-
-	//			BerElement* pBerElement = NULL;
-
-	//			for (Entry = ldap_first_entry(LdapConnection, LdapMessage); Entry != NULL; Entry = ldap_next_entry(LdapConnection, Entry))
-	//			{
-	//				for (Attr = ldap_first_attributeW(LdapConnection, Entry, &pBerElement); Attr != NULL; Attr = ldap_next_attributeW(LdapConnection, Entry, pBerElement))
-	//				{						
-	//					if (_wcsicmp(Attr, L"distinguishedname") == 0)
-	//					{
-	//						Values = ldap_get_valuesW(LdapConnection, Entry, Attr);
-
-	//						if (Values)
-	//						{
-	//							// find an empty entity to assign this server to
-
-	//							BOOL SiteAssigned = FALSE;
-
-	//							for (int dc = 0; dc < _countof(gEntities); dc++)
-	//							{
-	//								if (gEntities[dc].Type == ET_NONE)
-	//								{
-	//									BOOL DCAssigned = FALSE;
-
-	//									SiteAssigned = TRUE;
-
-	//									gEntities[dc].Type = ET_DC;
-
-	//									wcscpy_s(gEntities[dc].distinguishedname, _countof(gEntities[dc].distinguishedname), *Values);
-
-	//									Attr = ldap_next_attributeW(LdapConnection, Entry, pBerElement);
-
-	//									if (Attr)
-	//									{
-	//										if (_wcsicmp(Attr, L"dnshostname") == 0)
-	//										{
-	//											Values = ldap_get_valuesW(LdapConnection, Entry, Attr);
-
-	//											if (Values)
-	//											{
-	//												wcscpy_s(gEntities[dc].name, _countof(gEntities[dc].name), *Values);
-	//											}
-	//											else
-	//											{
-	//												LogEventW(LL_ERROR, LF_FILE, L"[%s] Failed to get attribute dnshostname from object %s!", __FUNCTIONW__, gEntities[dc].name);
-
-	//												goto Exit;
-	//											}
-	//										}
-	//									}
-	//									else
-	//									{
-	//										LogEventW(LL_ERROR, LF_FILE, L"[%s] Failed to get attribute dnshostname from object %s!", __FUNCTIONW__, gEntities[dc].name);
-
-	//										goto Exit;
-	//									}
-
-	//									// this is how we will know which site a DC belongs to
-	//									gEntities[dc].Parent = &gEntities[site]; 
-
-	//									// add the dc to the list of the site's children
-	//									for (int child = 0; child < _countof(gEntities[site].Children); child++)
-	//									{
-	//										if (gEntities[site].Children[child] == NULL)
-	//										{
-	//											DCAssigned = TRUE;
-
-	//											gEntities[site].Children[child] = &gEntities[dc];												
-
-	//											break;
-	//										}
-	//									}
-
-	//									if (DCAssigned == FALSE)
-	//									{
-	//										Result = ERROR_OUT_OF_STRUCTURES;
-
-	//										LogEventW(LL_ERROR, LF_FILE, L"[%s] Unable to find an empty storage location for the new entity! Too many objects?", __FUNCTIONW__);
-
-	//										goto Exit;
-	//									}
-
-	//									NumDCs++;
-
-	//									break;
-	//								}
-	//							}
-
-	//							if (SiteAssigned == FALSE)
-	//							{
-	//								Result = ERROR_OUT_OF_STRUCTURES;
-
-	//								LogEventW(LL_ERROR, LF_FILE, L"[%s] Unable to find an empty storage location for the new entity! Too many objects?", __FUNCTIONW__);
-
-	//								goto Exit;
-	//							}
-	//						}
-	//					}
-	//				}
-	//			}
-	//		}
-
-	//		LogEventW(LL_INFO, LF_FILE, L"[%s] %d domain controllers found in site %s.", __FUNCTIONW__, NumDCs, gEntities[site].name);
-	//	}
-	//}
-
-	//// should probably do site links/connections here?
-
-	//// Now to sort all the objects so they all show up at the right places.
-
-	//// place the sites first I guess idk
-	//// I guess we should try to place sites that connect with one another close together
-
-
-
-	//// Establish another connection and use ntdsapi to get fsmo role holders.
-	//// I would have preferred to keep using ldap but I couldn't figure out how to find all fsmos using only ldap.
-	//// Need to repeat this query for each domain in the forest, schema and domain naming fsmos are per-forest, but rid, pdce and infra fsmos are per-domain.
-	//if ((Result = DsBindW(gRegParams.DomainController, NULL, &DSBindHandle)) != ERROR_SUCCESS)
-	//{
-	//	LogEventW(LL_ERROR, LF_FILE, L"[%s] DsBindW failed with 0x%08lx!", __FUNCTIONW__, Result);
-
-	//	goto Exit;
-	//}
-
-	//if ((Result = DsListRolesW(DSBindHandle, &FSMOHolders)) != NO_ERROR)
-	//{
-	//	LogEventW(LL_ERROR, LF_FILE, L"[%s] DsListRolesW failed with 0x%08lx!", __FUNCTIONW__, Result);
-
-	//	goto Exit;
-	//}
-
-	//for (unsigned int role = 0; role < FSMOHolders->cItems; role++)
-	//{
-	//	switch (role)
-	//	{
-	//		case DS_ROLE_INFRASTRUCTURE_OWNER:
-	//		{
-	//			for (int dc = 0; dc < _countof(gEntities); dc++)
-	//			{
-	//				if (gEntities[dc].Type == ET_NONE)
-	//				{
-	//					break;
-	//				}
-
-	//				if (gEntities[dc].Type == ET_DC)
-	//				{
-	//					wchar_t NTDSSettingsDN[256] = { 0 };
-
-	//					wcscpy_s(NTDSSettingsDN, _countof(NTDSSettingsDN), L"CN=NTDS Settings,");
-
-	//					wcscat_s(NTDSSettingsDN, _countof(NTDSSettingsDN), gEntities[dc].distinguishedname);
-
-	//					if (_wcsicmp(NTDSSettingsDN, FSMOHolders->rItems[role].pName) == 0)
-	//					{
-	//						gEntities[dc].fInfrastructureFSMO = TRUE;
-
-	//						LogEventW(LL_INFO, LF_FILE, L"[%s] Found Infrastructure master FSMO owner: %s", __FUNCTIONW__, NTDSSettingsDN);
-	//					}
-	//				}
-	//			}
-
-	//			break;
-	//		}
-	//		case DS_ROLE_RID_OWNER:
-	//		{
-	//			for (int dc = 0; dc < _countof(gEntities); dc++)
-	//			{
-	//				if (gEntities[dc].Type == ET_NONE)
-	//				{
-	//					break;
-	//				}
-
-	//				if (gEntities[dc].Type == ET_DC)
-	//				{
-	//					wchar_t NTDSSettingsDN[256] = { 0 };
-
-	//					wcscpy_s(NTDSSettingsDN, _countof(NTDSSettingsDN), L"CN=NTDS Settings,");
-
-	//					wcscat_s(NTDSSettingsDN, _countof(NTDSSettingsDN), gEntities[dc].distinguishedname);
-
-	//					if (_wcsicmp(NTDSSettingsDN, FSMOHolders->rItems[role].pName) == 0)
-	//					{
-	//						gEntities[dc].fRIDFSMO = TRUE;
-
-	//						LogEventW(LL_INFO, LF_FILE, L"[%s] Found RID Master FSMO owner: %s", __FUNCTIONW__, NTDSSettingsDN);
-	//					}
-	//				}
-	//			}
-
-	//			break;
-	//		}
-	//		case DS_ROLE_PDC_OWNER:
-	//		{
-	//			for (int dc = 0; dc < _countof(gEntities); dc++)
-	//			{
-	//				if (gEntities[dc].Type == ET_NONE)
-	//				{
-	//					break;
-	//				}
-
-	//				if (gEntities[dc].Type == ET_DC)
-	//				{
-	//					wchar_t NTDSSettingsDN[256] = { 0 };
-
-	//					wcscpy_s(NTDSSettingsDN, _countof(NTDSSettingsDN), L"CN=NTDS Settings,");
-
-	//					wcscat_s(NTDSSettingsDN, _countof(NTDSSettingsDN), gEntities[dc].distinguishedname);
-
-	//					if (_wcsicmp(NTDSSettingsDN, FSMOHolders->rItems[role].pName) == 0)
-	//					{
-	//						gEntities[dc].fPDCEFSMO = TRUE;
-
-	//						LogEventW(LL_INFO, LF_FILE, L"[%s] Found PDCE FSMO owner: %s", __FUNCTIONW__, NTDSSettingsDN);
-	//					}
-	//				}
-	//			}
-
-	//			break;
-	//		}
-	//		case DS_ROLE_DOMAIN_OWNER:
-	//		{
-	//			for (int dc = 0; dc < _countof(gEntities); dc++)
-	//			{
-	//				if (gEntities[dc].Type == ET_NONE)
-	//				{
-	//					break;
-	//				}
-
-	//				if (gEntities[dc].Type == ET_DC)
-	//				{
-	//					wchar_t NTDSSettingsDN[256] = { 0 };
-
-	//					wcscpy_s(NTDSSettingsDN, _countof(NTDSSettingsDN), L"CN=NTDS Settings,");
-
-	//					wcscat_s(NTDSSettingsDN, _countof(NTDSSettingsDN), gEntities[dc].distinguishedname);
-
-	//					if (_wcsicmp(NTDSSettingsDN, FSMOHolders->rItems[role].pName) == 0)
-	//					{
-	//						gEntities[dc].fDomainNamingFSMO = TRUE;
-
-	//						LogEventW(LL_INFO, LF_FILE, L"[%s] Found domain naming FSMO owner: %s", __FUNCTIONW__, NTDSSettingsDN);
-	//					}
-	//				}
-	//			}
-
-	//			break;
-	//		}
-	//		case DS_ROLE_SCHEMA_OWNER:
-	//		{
-	//			for (int dc = 0; dc < _countof(gEntities); dc++)
-	//			{
-	//				if (gEntities[dc].Type == ET_NONE)
-	//				{
-	//					break;
-	//				}
-
-	//				if (gEntities[dc].Type == ET_DC)
-	//				{
-	//					wchar_t NTDSSettingsDN[256] = { 0 };
-
-	//					wcscpy_s(NTDSSettingsDN, _countof(NTDSSettingsDN), L"CN=NTDS Settings,");
-
-	//					wcscat_s(NTDSSettingsDN, _countof(NTDSSettingsDN), gEntities[dc].distinguishedname);
-
-	//					if (_wcsicmp(NTDSSettingsDN, FSMOHolders->rItems[role].pName) == 0)
-	//					{
-	//						gEntities[dc].fSchemaFSMO = TRUE;
-
-	//						LogEventW(LL_INFO, LF_FILE, L"[%s] Found schema FSMO owner: %s", __FUNCTIONW__, NTDSSettingsDN);
-	//					}
-	//				}
-	//			}
-
-	//			break;
-	//		}
-	//		default:
-	//		{
-	//			ASSERT(FALSE, L"UNKNOWN FSMO ROLE!?");
-	//		}
-	//	}
-	//}
 	
 
 Exit:
