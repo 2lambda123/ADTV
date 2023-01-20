@@ -56,6 +56,8 @@ POINT gMouseScreenPosition;
 
 POINT gMouseWorldPosition;
 
+POINT gMousePreviousCursorPosition;
+
 RESOLUTION gResolutions[] = {
 	// 16:9 resolutions, divisible by 8
 	{ .Width = 384,  .Height = 216 },
@@ -253,9 +255,19 @@ LRESULT CALLBACK MainWindowProc(_In_ HWND WindowHandle, _In_ UINT Message, _In_ 
 				// clicking and dragging should pan
 				if (WParam & MK_LBUTTON)
 				{
-					gCamera.x = gMouseWorldPosition.x / gCamera.z;
+					int dx = gMouseScreenPosition.x - gMousePreviousCursorPosition.x;
 
-					gCamera.y = gMouseWorldPosition.y / gCamera.z;
+					int dy = gMouseScreenPosition.y - gMousePreviousCursorPosition.y;
+
+					gCamera.x -= dx;
+
+					gCamera.y -= dy;
+
+					gMousePreviousCursorPosition = gMouseScreenPosition;
+
+					//gCamera.x = gMouseWorldPosition.x / gCamera.z;
+
+					//gCamera.y = gMouseWorldPosition.y / gCamera.z;
 				}
 			}
 
@@ -387,6 +399,14 @@ LRESULT CALLBACK MainWindowProc(_In_ HWND WindowHandle, _In_ UINT Message, _In_ 
 			gContinue = FALSE;
 
 			PostQuitMessage(0);
+
+			break;
+		}
+		case WM_LBUTTONDOWN:
+		{
+			GetCursorPos(&gMousePreviousCursorPosition);
+
+			ScreenToClient(gMainWindowHandle, &gMousePreviousCursorPosition);
 
 			break;
 		}
