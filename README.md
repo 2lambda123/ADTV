@@ -31,3 +31,5 @@ If not present, the default font of Consolas is used.
 - DomainController (String)
 
 If not present, a domain controller to use for discovery will be located automatically.
+
+[!screenshot1](screenshot01.png)
